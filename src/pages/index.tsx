@@ -4,6 +4,7 @@ import Link from "next/link";
 import { api } from "~/utils/api";
 
 export default function Home() {
+    return <div></div>/*
   const hello = api.example.hello.useQuery({ text: "from tRPC" });
 
   return (
@@ -51,7 +52,7 @@ export default function Home() {
         </div>
       </main>
     </>
-  );
+  );*/
 }
 
 function AuthShowcase() {

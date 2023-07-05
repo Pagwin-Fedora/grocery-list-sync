@@ -4,7 +4,7 @@ import { appRouter } from "~/server/api/root";
 import { createTRPCContext } from "~/server/api/trpc";
 
 // export API handler
-export default createNextApiHandler({
+/*export default createNextApiHandler({
   router: appRouter,
   createContext: createTRPCContext,
   onError:
@@ -15,4 +15,4 @@ export default createNextApiHandler({
           );
         }
       : undefined,
-});
+});*/
