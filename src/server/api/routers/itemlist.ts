@@ -19,6 +19,7 @@ export const itemListRouter = createTRPCRouter({
     deleteList: protectedProcedure
 	.input(z.string())
 	.mutation(async ({ctx:{prisma, session}, input})=>{
+	    console.log("LOG: ",input)
 	    const list = prisma.itemList.findUnique({
 		where: {
 		    id:input,
@@ -35,3 +36,4 @@ export const itemListRouter = createTRPCRouter({
 	    else return false;
     })
 });
+export type itemListRouter = typeof itemListRouter;
