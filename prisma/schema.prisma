@@ -18,14 +18,16 @@ datasource db {
 model ItemList {
   id         String    @id @default(cuid())
   items      Item[]
-  authorized Account[]
+  authorized User[]
 }
 
 model Item {
   id     String   @id @default(cuid())
+  content String
   list   ItemList @relation(fields: [listId], references: [id])
   listId String
 }
+
 
 // Necessary for Next auth
 model Account {
@@ -42,10 +44,6 @@ model Account {
   id_token          String? // @db.Text
   session_state     String?
   user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  //TODO: fix so relationship is multiple to multiple
-  ItemList          ItemList? @relation(fields: [itemListId], references: [id])
-  itemListId        String?
-
   @@unique([provider, providerAccountId])
 }
 
@@ -65,6 +63,8 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+
+  lists		ItemList[]
 }
 
 model VerificationToken {
