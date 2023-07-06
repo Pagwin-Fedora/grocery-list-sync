@@ -1,10 +1,12 @@
 import {useSession, signIn, signOut} from "next-auth/react";
 import {api} from "~/utils/api";
 export default function FunctionalityTest(){
-    const {data:session} = useSession();
+getServerSession
+    const {data:session} = getServerSession();
     if(session?.user === undefined){
 	return <SignButton hasSession={false}/>;
     }
+    else return <><SignButton hasSession={true}/><AddListButton/></>
     //api.itemList.
     //session.
 }
@@ -18,4 +20,8 @@ function SignButton({hasSession}:{hasSession:boolean}){
 }
 function AddListButton(){
     return <button></button>
+}
+function logID<T>(value:T):T{
+    console.log("LOG: ",value);
+    return value;
 }
