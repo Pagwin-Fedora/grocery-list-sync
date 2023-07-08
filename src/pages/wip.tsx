@@ -10,8 +10,6 @@ export default function FunctionalityTest(){
 	return <SignButton hasSession={false}/>;
     }
     else return <><SignButton hasSession={true}/><AddListButton/><RemListInput/></>
-    //api.itemList.
-    //session.
 }
 function SignButton({hasSession}:{hasSession:boolean}){
     return <button
@@ -30,7 +28,7 @@ function RemListInput(){
     const mut_hook = api.itemList.deleteList.useMutation();
     return <>
 	<button className="rounded-full px-10 py-3 bg-black/90 text-white" onClick={rem_list.bind(null,mut_hook,input)}>delete list</button>
-	<input value={input} onInput = {(e:ChangeEvent<HTMLInputElement>)=>setInput(e.target.value)}></input>
+	<input placeholder="remove list id" value={input} onInput = {(e:ChangeEvent<HTMLInputElement>)=>setInput(e.target.value)}></input>
     </>
 }
 function add_list(hook:{mutate:()=>void}){
