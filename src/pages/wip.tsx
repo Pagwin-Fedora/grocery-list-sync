@@ -1,5 +1,5 @@
 import {useSession, signIn, signOut} from "next-auth/react";
-import {vanilla_api} from "~/utils/api";
+import {api} from "~/utils/api";
 import {useState,type ChangeEvent} from "react";
 
 export default function FunctionalityTest(){
@@ -22,19 +22,21 @@ function SignButton({hasSession}:{hasSession:boolean}){
 	  </button>;
 }
 function AddListButton(){
-    return <button className="rounded-full px-10 py-3 bg-black/90 text-white" onClick={()=>void add_list()}>add list</button>
+    const mut_hook = api.itemList.createList.useMutation();
+    return <button className="rounded-full px-10 py-3 bg-black/90 text-white" onClick={add_list.bind(null,mut_hook)}>add list</button>
 }
 function RemListInput(){
     const [input, setInput] = useState("");
+    const mut_hook = api.itemList.deleteList.useMutation();
     return <>
-	<button className="rounded-full px-10 py-3 bg-black/90 text-white" onClick={()=>{void rem_list(input);}}>delete list</button>
+	<button className="rounded-full px-10 py-3 bg-black/90 text-white" onClick={rem_list.bind(null,mut_hook,input)}>delete list</button>
 	<input value={input} onInput = {(e:ChangeEvent<HTMLInputElement>)=>setInput(e.target.value)}></input>
     </>
 }
-async function add_list(){
-    const a = await vanilla_api.itemList.createList.mutate();
+function add_list(hook:{mutate:()=>void}){
+    const a = hook.mutate();
     console.log(a)
 }
-async function rem_list(id:string){
-    await vanilla_api.itemList.deleteList.mutate(id);
+function rem_list(hook:{mutate:(id:string)=>void}, id:string){
+    hook.mutate(id);
 }
