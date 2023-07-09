@@ -5,7 +5,7 @@
 await import("./src/env.mjs");
 
 /** @type {import("next").NextConfig} */
-const config = {
+const base_config = {
   reactStrictMode: true,
 
   /**
@@ -19,5 +19,14 @@ const config = {
     defaultLocale: "en",
   },
 };
+
+//progressive web app thing easyness stuff
+import withPWA from "next-pwa";
+
+const withPWA_ = withPWA({
+  dest: 'public'
+});
+
+const config = withPWA_(base_config);
 
 export default config;

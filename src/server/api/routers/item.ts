@@ -3,7 +3,6 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "~/server/api/trpc";
-import type {PrismaClient} from "@prisma/client";
 export const itemRouter = createTRPCRouter({
     updateContent:protectedProcedure
 	.input(z.object({item_id:z.string().cuid(), content:z.string()}))

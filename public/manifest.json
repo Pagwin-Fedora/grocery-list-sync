@@ -1,0 +1,21 @@
+{
+  "name": "Grocery Sync",
+  "short_name": "GS",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "3780x3780",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-small.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#FFFFFF",
+  "background_color": "#FFFFFF",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait"
+}
