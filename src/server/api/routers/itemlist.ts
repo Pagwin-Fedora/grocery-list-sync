@@ -49,15 +49,14 @@ export const itemListRouter = createTRPCRouter({
 	    return true;
 	}),
     getItems: protectedProcedure
-	.input(z.string().cuid())
-	.query(async ({ctx:{prisma,session}, input:list_id})=>{
+	.input(z.object({list_id:z.string().cuid()}))
+	.query(async ({ctx:{prisma,session}, input:{list_id}})=>{
 	    if(!await isUserAuthorized(prisma,list_id,session.user.id)) return false;
 	    const list = prisma.itemList.findUnique({
 		where:{
 		    id:list_id
 		}
 	    });
-
 	    return await list.items();
 	}),
     delItem: protectedProcedure
