@@ -73,7 +73,14 @@ export const itemListRouter = createTRPCRouter({
 		    id:item_id
 		}
 	    });
-	})
+	}),
+    getLists: protectedProcedure.query(async ({ctx:{prisma, session}})=>{
+	return await (prisma.user.findUnique({
+	    where:{
+		id:session.user.id
+	    }
+	}).lists())
+    })
 });
 
 async function isUserAuthorized(prisma:PrismaClient, list_id:string, user_id:string):Promise<boolean>{

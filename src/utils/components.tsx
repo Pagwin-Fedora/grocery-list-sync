@@ -54,3 +54,9 @@ export function ItemList({list_id}:{list_id:string}){
 function Item(item:{content:string}){
     <>{item.content}</>
 }
+export function ListList(){
+    const lists = api.itemList.getLists.useQuery();
+    if(!lists.data) <p>loading</p>
+    // idk why key is needed but typescript got angy otherwise
+    return <>{lists.data?.map(({id})=><p key={id}>{id}</p>)}</>
+}
