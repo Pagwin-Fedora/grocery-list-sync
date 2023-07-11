@@ -55,6 +55,7 @@ function Item(item:{content:string}){
     <>{item.content}</>
 }
 export function ListList(){
+    //TODO:do polling here so data updates https://www.apollographql.com/docs/react/data/queries/#polling
     const lists = api.itemList.getLists.useQuery();
     if(!lists.data) <p>loading</p>
     // idk why key is needed but typescript got angy otherwise
