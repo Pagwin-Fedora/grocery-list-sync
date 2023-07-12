@@ -80,7 +80,52 @@ export const itemListRouter = createTRPCRouter({
 		id:session.user.id
 	    }
 	}).lists())
-    })
+    }),
+    shareWith: protectedProcedure
+	.input(z.object({
+	    list_id:z.string().cuid(),
+	    people:z.array(z.string().cuid())
+	}))
+	.mutation(async ({ctx:{prisma,session},input:{list_id,people}})=>{
+	    const authed = await (prisma.itemList.findUnique({
+		where:{
+		    id:list_id
+		}
+	    }).authorized());
+	    if(!authed) return false;
+	    if(authed.some((user)=>{
+		return user.id === session.user.id;
+	    })){
+		const people_obs = await prisma.user.findMany({
+		    where:{
+			id: {in: people}
+		    }
+		});
+		authed.concat(people_obs);
+		//retyping to have everything be x | undefined instead of x | null
+		const new_authed = authed.map(u=>{
+		    return {
+			id: u.id,
+			email:u.email ? u.email:undefined,
+			emailVerified: u.emailVerified? u.emailVerified: undefined,
+			image: u.image ? u.image:undefined,
+			name: u.name ? u.name:undefined
+		    };
+		});
+		await prisma.itemList.update({
+		    where:{
+			id:list_id
+		    },
+		    data:{
+			authorized:{
+			    set:new_authed
+			}
+		    }
+		});
+		return true;
+	    }
+	    else return false;
+	})
 });
 
 async function isUserAuthorized(prisma:PrismaClient, list_id:string, user_id:string):Promise<boolean>{
