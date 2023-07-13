@@ -65,9 +65,22 @@ export const itemListRouter = createTRPCRouter({
     getItems: protectedProcedure
 	.input(z.object({list_id:z.string().cuid()}))
 	.query(async ({ctx:{prisma,session}, input:{list_id}})=>{
+	    // is the user supposed to be able to see this list?
 	    if(!await isUserAuthorized(prisma,list_id,session.user.id)) return false;
+	    // run the cache
 	    if(list_item_cache.get(list_id) && list_item_cache.get(list_id)?.valid){
+		//console.log("cache hit");
+		//console.log("cache hit");
+		//console.log("cache hit");
+		//console.log("cache hit");
+		//console.log("cache hit");
+		//console.log("cache hit");
 		return list_item_cache.get(list_id)?.cache;
+	    }
+	    else{
+		//get reason for cache miss
+		//const reason = list_item_cache.get(list_id)?list_item_cache.get(list_id)?.valid ? "unknown":"invalid":"missing";
+		//console.log("cache miss:", reason);
 	    }
 	    const list = prisma.itemList.findUnique({
 		where:{
@@ -75,7 +88,8 @@ export const itemListRouter = createTRPCRouter({
 		}
 	    });
 	    const val = await list.items();
-	    list_item_cache.set(list_id,{valid:true,val});
+	    if(val === null) return null;
+	    list_item_cache.set(list_id,{valid:true,cache:val});
 	    return val;
 	}),
     delItem: protectedProcedure
@@ -155,20 +169,46 @@ export const itemListRouter = createTRPCRouter({
 		return true;
 	    }
 	    else return false;
+	}),
+    //TODO: make sure this and shareWith updates user_list_auth_cache
+    unshareWith: protectedProcedure
+	.input(z.null())
+	.mutation(async ()=>{
+	    await Promise.resolve(3);
 	})
 });
 
+let user_list_auth_cache:Map<string,boolean> = new Map();
 async function isUserAuthorized(prisma:PrismaClient, list_id:string, user_id:string):Promise<boolean>{
-	const list = prisma.itemList.findUnique({
-	    where: {
-		id:list_id,
-	    }
-	});
-	return !!(await list.authorized())?.some(({id})=>id===user_id);
+    const cache_val = user_list_auth_cache.get(JSON.stringify({user_id,list_id}));
+    if(cache_val != undefined){
+	console.log("cache hit");
+	console.log("cache hit");
+	console.log("cache hit");
+	console.log("cache hit");
+	console.log("cache hit");
+	return cache_val;
+    }
+    else {
+	//console.log("cache miss");
+	//console.log("cache miss");
+	//console.log("cache miss");
+	//console.log("cache miss");
+	//console.log("cache miss");
+    }
+    const list = prisma.itemList.findUnique({
+	where: {
+	    id:list_id,
+	}
+    });
+    const val = !!(await list.authorized())?.some(({id})=>id===user_id);
+    user_list_auth_cache.set(JSON.stringify({user_id,list_id}),val);
+    return val;
 }
 export type ItemListRouter = typeof itemListRouter;
 // use this function in an admin dashboard if this scales sufficiently where the memory leaks in these caches become a problem
 export function clear_caches(){
     user_list_cache = new Map();
     list_item_cache = new Map();
+    user_list_auth_cache = new Map();
 }

@@ -49,7 +49,10 @@ export function ItemList({list_id}:{list_id:string}){
     //check if we're fetching
     if(!data.data)return <p>loading list</p>
     const items = data.data.map((data)=>{
-	return <><Item key={data.id} id={data.id} content={data.content}/><br/></>
+	return <>
+	    <Item key={data.id} id={data.id} content={data.content}/>
+	    <br/>
+	</>;
     });
     return <>{items}</>
 }
