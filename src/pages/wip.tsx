@@ -1,5 +1,5 @@
 import {useSession} from "next-auth/react";
-import {SignButton, AddListButton, RemListInput, AddItem, ItemList, ListList} from "~/utils/components";
+import {SignButton, AddListButton, RemListInput, AddItem, ListList} from "~/utils/components";
 export default function FunctionalityTest(){
     const {data:session, status} = useSession();
     if(status === "loading") return <div>loading</div>

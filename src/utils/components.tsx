@@ -45,7 +45,7 @@ function add_item(hook:{mutate:(input:{list_id:string, item_content:string})=>vo
     return;
 }
 export function ItemList({list_id}:{list_id:string}){
-    const data = api.itemList.getItems.useQuery({list_id},);
+    const data = api.itemList.getItems.useQuery({list_id},{refetchInterval:500});
     //check if we're fetching
     if(!data.data)return <p>loading list</p>
     const items = data.data.map((data)=>{
@@ -70,10 +70,12 @@ function RemItemBut({id}:{id:string}){
 }
 export function ListList(){
     //TODO:do polling here so data updates https://www.apollographql.com/docs/react/data/queries/#polling
-    const lists = api.itemList.getLists.useQuery();
+    const lists = api.itemList.getLists.useQuery(undefined,{
+	refetchInterval:100
+    });
     if(!lists.data) <p>loading</p>
     // idk why key is needed but typescript got angy otherwise
-    return <>{lists.data?.map(({id})=><p key={id}>{id}</p>)}</>
+    return <>{lists.data?.map(({id})=><a href={"/list/"+id} key={id}>{id}</a>)}</>
 }
 export function AddItemButton(attrs:{list_id:string}){
     const mutation = api.itemList.addItem.useMutation();
