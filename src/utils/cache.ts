@@ -1,30 +1,50 @@
 export class Cache<T> implements GenericCache<T>{
     /// implementation detail
-    underlying:Map<string,T> = new Map();
+    underlying:Map<string,{cleanUpHandle?:number,val:T}> = new Map();
     get(key:string, onMiss:(key:string)=>T):T{
 	const tmp = this.underlying.get(key);
 	if(tmp){
-	    return tmp;
+	    return tmp.val;
 	}
 	else{
 	    const val = onMiss(key);
-	    this.underlying.set(key,val);
+	    this.underlying.set(key,{cleanUpHandle:undefined,val});
 	    return val;
 	}
     }
     async getAsync(key:string, onMiss:(key:string)=>Promise<T>):Promise<T>{
 	const tmp = this.underlying.get(key);
 	if(tmp){
-	    return tmp;
+	    return tmp.val;
 	}
 	else{
 	    const val = await onMiss(key);
-	    this.underlying.set(key,val);
+	    this.underlying.set(key,{cleanUpHandle:undefined,val});
 	    return val;
 	}
     }
     invalidate(key:string):void{
 	this.underlying.delete(key);
+    }
+    hasLifespan(key:string):boolean{
+	const val = this.underlying.get(key);
+	if(!val) return false;
+	return !(val.cleanUpHandle === undefined);
+    }
+    setLifespan(key:string, time:number):void{
+	const val = this.underlying.get(key);
+	if(!val) return;
+	if(val.cleanUpHandle !== undefined){
+	    clearTimeout(val.cleanUpHandle);
+	}
+	val.cleanUpHandle = window.setTimeout(this.invalidate.bind(this,key),time);
+    }
+    clearLifespan(key:string):void{
+	const val = this.underlying.get(key);
+	if(!val) return;
+	if(val.cleanUpHandle !== undefined){
+	    clearTimeout(val.cleanUpHandle);
+	}
     }
     clear():void{
 	this.underlying.clear();
@@ -57,6 +77,15 @@ export class FallibleCache<T> implements GenericCache<T>{
     clear():void{
 	this.underlying.clear();
     }
+    hasLifespan(key:string):boolean{
+	return this.underlying.hasLifespan(key);
+    }
+    setLifespan(key:string, time:number):void{
+	return this.underlying.setLifespan(key,time);
+    }
+    clearLifespan(key:string):void{
+	return this.underlying.clearLifespan(key);
+    }
     
 }
 export interface GenericCache<T>{
@@ -64,7 +93,10 @@ export interface GenericCache<T>{
     getAsync(key:string, onMiss:(key:string)=>Promise<T | null | undefined>):Promise<T | null>;
     invalidate(key:string):void;
     clear():void;
-
+    //might not want these on the base generic interface
+    hasLifespan(key:string):boolean;
+    setLifespan(key:string, time:number):void;
+    clearLifespan(key:string):void;
 }
 
 interface GenObCache<K,V>{

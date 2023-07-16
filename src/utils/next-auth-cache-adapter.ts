@@ -2,7 +2,6 @@ import type { Adapter, AdapterUser, AdapterAccount ,AdapterSession} from "@auth/
 import {FallibleCache, FallibleObjectCache} from "~/utils/cache";
 
 
-
 //for convenience while figuring out what can be cached and when those caches should be invalidated gonna copy paste some next-auth documentation here
 //
 // TLDR for now: User should be invalidated when updated or deleted, an account should be invalidated when it's unlinked and a session should be invalidated when it's updated, deleted or when it expires. Users can have multiple accounts and sessions so 
@@ -72,7 +71,15 @@ export class CacheAdapter{
     }
     // doesn't mutate
     async getSessionAndUser(sessionToken:string) {
-	return await this.sessionCache.getAsync(sessionToken,async sessionToken=>await this.underlying.getSessionAndUser?.(sessionToken));
+	const pair = await this.sessionCache.getAsync(sessionToken,async sessionToken=>await this.underlying.getSessionAndUser?.(sessionToken));
+	if(!pair) return pair;
+
+	// code to have the session taken out of the cache when it expires
+	const time_left = pair.session.expires.getTime()-Date.now();
+	//if we're coming up on the invalidation of the session then we shouldn't keep it in the cache anymore
+	if(time_left < 100) this.sessionCache.invalidate(sessionToken);
+	else this.sessionCache.setLifespan(sessionToken,time_left);
+	return pair;
     }
     async updateSession(session:AdapterSession) {
 	return await this.underlying.updateSession?.(session);
