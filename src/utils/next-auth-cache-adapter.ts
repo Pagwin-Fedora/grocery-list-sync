@@ -49,20 +49,29 @@ export class CacheAdapter{
     async getUserByAccount(account:AdapterAccount) {
 	return await this.userAccountCache.getAsync(account,async account=>await this.underlying.getUserByAccount?.(account));
     }
-    // invalidates any cache with a user as a key or a value
     async updateUser(user:AdapterUser) {
+	this.userIdCache.invalidate(user.id);
+	this.userEmailCache.invalidate(user.email);
+
 	return await this.underlying.updateUser?.(user);
     }
-    // invalidates any cache with a user as a key or a value
     async deleteUser(userId:string) {
+	const user = await this.userIdCache.getAsync(userId,async id=>await this.underlying.getUser?.(id));
+	if(user !== null) this.userEmailCache.invalidate(user.email);
+	this.userIdCache.invalidate(userId);
+
 	return await this.underlying.deleteUser?.(userId);
     }
-    // unclear
+    // invalidates the account cache
     async linkAccount(account:AdapterAccount) {
+	this.userAccountCache.invalidate(account);
+
 	return await this.underlying.linkAccount?.(account);
     }
-    // invalidates any cache with Account as a key or value
+    // invalidates account cache 
     async unlinkAccount(account:AdapterAccount) {
+	this.userAccountCache.invalidate(account);
+
 	return await this.underlying.unlinkAccount?.(account);
     }
     // currently assuming this doesn't invalidate any caches that wouldn't be invalid via other means
@@ -78,13 +87,17 @@ export class CacheAdapter{
 	const time_left = pair.session.expires.getTime()-Date.now();
 	//if we're coming up on the invalidation of the session then we shouldn't keep it in the cache anymore
 	if(time_left < 100) this.sessionCache.invalidate(sessionToken);
-	else this.sessionCache.setLifespan(sessionToken,time_left);
+	else this.sessionCache.setLifespan(sessionToken, time_left);
 	return pair;
     }
     async updateSession(session:AdapterSession) {
+	this.sessionCache.invalidate(session.sessionToken);
+
 	return await this.underlying.updateSession?.(session);
     }
     async deleteSession(sessionToken:string) {
+	this.sessionCache.invalidate(sessionToken);
+
 	return await this.underlying.deleteSession?.(sessionToken);
     }
 }
