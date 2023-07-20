@@ -1,4 +1,6 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import type {Adapter} from "next-auth/adapters";
+import {CacheAdapter} from "~/utils/next-auth-cache-adapter";
 import { type GetServerSidePropsContext } from "next";
 import {
   getServerSession,
@@ -46,7 +48,8 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   },
-  adapter: PrismaAdapter(prisma),
+  // hate the type casting here as well
+  adapter: new CacheAdapter(<Adapter<true>>PrismaAdapter(prisma)),
   providers: [
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,

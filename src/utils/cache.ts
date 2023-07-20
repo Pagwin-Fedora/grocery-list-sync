@@ -123,6 +123,9 @@ export class FallibleObjectCache<K,V> implements GenObCache<K,V>{
     clear():void{
 	this.underlying.clear();
     }
+    setLifespan(key:K, time:number):void{
+	this.underlying.setLifespan(JSON.stringify(key),time);
+    }
 }
 export class ObjectCache<K,V> implements GenObCache<K,V>{
     // if you're wondering why I'm not using Map<K,V> as the underlying it's because js objects are references so Map.get({}) will never match anything ever instead I'm using JSON.stringify and at that point why not just use the existing utility of FallibleCache
@@ -141,5 +144,8 @@ export class ObjectCache<K,V> implements GenObCache<K,V>{
     }
     clear():void{
 	this.underlying.clear();
+    }
+    setLifespan(key:K, time:number):void{
+	this.underlying.setLifespan(JSON.stringify(key),time);
     }
 }
