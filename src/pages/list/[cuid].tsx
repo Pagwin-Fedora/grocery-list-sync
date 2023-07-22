@@ -1,5 +1,5 @@
 import {useRouter} from "next/router";
-import {ItemList, AddItemButton} from "~/utils/components";
+import {ItemList, AddItemButton, ShareListButton} from "~/utils/components";
 
 export default function Page(){
     const router = useRouter();
@@ -10,5 +10,7 @@ export default function Page(){
 	<ItemList list_id={id}/>
 	<br/>
 	<AddItemButton list_id={id}/>
+	<br/>
+	<ShareListButton list_id={id}/>
     </>;
 }

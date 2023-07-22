@@ -1,6 +1,6 @@
 export class Cache<T> implements GenericCache<T>{
     /// implementation detail
-    underlying:Map<string,{cleanUpHandle?:number,val:T}> = new Map();
+    underlying:Map<string,{cleanUpHandle?:ReturnType<typeof setTimeout>,val:T}> = new Map();
     get(key:string, onMiss:(key:string)=>T):T{
 	const tmp = this.underlying.get(key);
 	if(tmp){
@@ -37,7 +37,9 @@ export class Cache<T> implements GenericCache<T>{
 	if(val.cleanUpHandle !== undefined){
 	    clearTimeout(val.cleanUpHandle);
 	}
-	val.cleanUpHandle = window.setTimeout(this.invalidate.bind(this,key),time);
+	//setTimeout has an overflow it seems, regardless, nearly a month is a long enough lifetime for a cache value in this case
+	time = Math.min(Math.pow(2,31)-1, time);
+	val.cleanUpHandle = setTimeout(this.invalidate.bind(this,key),time);
     }
     clearLifespan(key:string):void{
 	const val = this.underlying.get(key);

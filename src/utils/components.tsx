@@ -1,6 +1,6 @@
 import {api} from "~/utils/api";
 import {onInputHelper} from "~/utils/component_helpers";
-import {useState,type ChangeEvent} from "react";
+import {useState} from "react";
 import {signIn, signOut} from "next-auth/react";
 export function SignButton({hasSession}:{hasSession:boolean}){
     return <button
@@ -87,4 +87,17 @@ export function AddItemButton(attrs:{list_id:string}){
 	<input placeholder="item contents" onInput={onInputHelper(setContents)}/>
 	<button onClick={add_item.bind(null,mutation,contents,attrs.list_id)}>add item</button>
     </>;
+}
+export function ShareListButton(attrs:{list_id:string}){
+    const mutation = api.itemList.shareWith.useMutation();
+
+    const [shareId, setShareId] = useState("");
+    return <>
+	<input placeholder="share id" onInput={onInputHelper(setShareId)}/>
+	<button onClick={()=>mutation.mutate({list_id:attrs.list_id,people:[shareId]})}>Share list</button>
+    </>
+}
+export function ShareIdDisplay(attrs:{user_id:string}){
+    
+    return <>share id:{attrs.user_id}</>
 }
