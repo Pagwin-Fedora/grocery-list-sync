@@ -14,8 +14,8 @@ export default function FunctionalityTest(){
 	<br/>
 	<ShareIdDisplay user_id={session.user.id}/>
 	<br/>
-	<AddListButton/>
-	<br/>
 	<ListList/>
+	<br/>
+	<AddListButton/>
     </>
 }

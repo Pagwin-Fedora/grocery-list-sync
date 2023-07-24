@@ -76,20 +76,15 @@ export function ListList(){
 	refetchInterval:100
     });
     if(!lists.data) <p>loading</p>;
+    // using the vanilla api here might be bad practice but I don't know how to get around this otherwise
     const list_items = lists.data?.map((attrs)=>{
-	return <>{ListItem(attrs)}<br/></>
+	return <tr key={attrs.id}>
+	    <td><a className="text-lg" href={"/list/"+attrs.id} key={attrs.id}>{attrs.id}</a></td>
+	    <td><button className="hover:ease-in-out hover:duration-500 hover:bg-red-800 active:ease-in-out active:duration-100 active:bg-red-900 outline-none text-white bg-red-600 font-bold text-lg border-4 border-black rounded-full bg-contain m-3 p-1" onClick={()=>{const _ = vanilla_api.itemList.deleteList.mutate(attrs.id)}}>delete list</button></td>
+	</tr>
     });
     // idk why key is needed but typescript got angy otherwise
-    return <>{list_items}</>
-}
-function ListItem({id}:{id:string}){
-    // using the vanilla api here might be bad practice but I don't know how to get around this otherwise
-    const mutation = vanilla_api.itemList.deleteList;
-    //await mutation.mutate(id)
-    return <>
-	<a href={"/list/"+id} key={id}>{id}</a>
-	<button onClick={()=>{const _ = mutation.mutate(id)}}>delete list</button>
-    </>;
+    return <table>{list_items}</table>
 }
 export function AddItemButton(attrs:{list_id:string}){
     const mutation = api.itemList.addItem.useMutation();

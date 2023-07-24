@@ -3,6 +3,8 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "~/server/api/trpc";
+import {TRPCError} from "@trpc/server";
+  
 import type {PrismaClient} from "@prisma/client";
 import {FallibleCache, ObjectCache} from "~/utils/cache";
 
@@ -24,6 +26,13 @@ export const itemListRouter = createTRPCRouter({
     deleteList: protectedProcedure
 	.input(z.string().cuid())
 	.mutation(async ({ctx:{prisma, session}, input:list_id})=>{
+	    // if we don't check for existence beforehand we'll get told that we aren't authorized later
+	    if(!await listExists(prisma, list_id)){
+		// technically this should do nothing, practicall it seems to fix a bug
+		user_list_cache.invalidate(session.user.id);
+		list_item_cache.invalidate(list_id);
+		return;
+	    }
 	    if(await isUserAuthorized(prisma,list_id,session.user.id)){
 		// kinda sucks that all the users's lists need to be invalidated at once but oh well
 		user_list_cache.invalidate(session.user.id);
@@ -40,11 +49,12 @@ export const itemListRouter = createTRPCRouter({
 			id:list_id
 		    }
 		});
-
-
-		return true;
+		return;
 	    }
-	    else return false;
+	    else throw new TRPCError({
+		code:"UNAUTHORIZED",
+		message: "not authorized to delete this list"
+	    });
     }),
     addItem: protectedProcedure
 	.input(z.object({
@@ -179,6 +189,14 @@ async function isUserAuthorized(prisma:PrismaClient, list_id:string, user_id:str
 	return !!(await list.authorized())?.some(({id})=>id===user_id);
 
     });
+}
+async function listExists(prisma:PrismaClient, list_id:string){
+    const val = await prisma.itemList.findUnique({
+	where:{
+	    id:list_id
+	}
+    });
+    return val!==null;
 }
 export type ItemListRouter = typeof itemListRouter;
 // use this function in an admin dashboard if this scales sufficiently where the memory leaks in these caches become a problem
