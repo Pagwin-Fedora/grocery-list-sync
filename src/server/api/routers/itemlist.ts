@@ -17,20 +17,30 @@ export const itemListRouter = createTRPCRouter({
 		}
 	    }
 	});
+	// kinda sucks that all the users's lists need to be invalidated at once but oh well
+	user_list_cache.invalidate(ctx.session.user.id);
 	return res;
     }),
     deleteList: protectedProcedure
 	.input(z.string().cuid())
 	.mutation(async ({ctx:{prisma, session}, input:list_id})=>{
-	    console.log("LOG: ", list_id)
 	    if(await isUserAuthorized(prisma,list_id,session.user.id)){
+		// kinda sucks that all the users's lists need to be invalidated at once but oh well
+		user_list_cache.invalidate(session.user.id);
+
+		user_list_auth_cache.invalidate({user_id:session.user.id, list_id})
+		list_item_cache.invalidate(list_id);
+		await prisma.item.deleteMany({
+		    where: {
+			listId: list_id
+		    }
+		});
 		await prisma.itemList.delete({
 		    where: {
 			id:list_id
 		    }
 		});
 
-		list_item_cache.invalidate(list_id);
 
 		return true;
 	    }
@@ -43,6 +53,7 @@ export const itemListRouter = createTRPCRouter({
 	}))
 	.mutation(async ({ctx:{prisma,session}, input:{list_id,item_content}})=>{
 	    if(!await isUserAuthorized(prisma,list_id,session.user.id)) return false;
+	    list_item_cache.invalidate(list_id);
 	    await prisma.itemList.update({
 		where:{
 		    id:list_id
@@ -82,6 +93,7 @@ export const itemListRouter = createTRPCRouter({
 		}
 	    }))?.listId || "if you see this string anywhere go to ~/src/server/api/routers/itemlist.ts";
 	    if(!await isUserAuthorized(prisma,list_id,session.user.id)) return false;
+	    list_item_cache.invalidate(list_id);
 	    await prisma.item.delete({
 		where:{
 		    id:item_id

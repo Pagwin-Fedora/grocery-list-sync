@@ -11,10 +11,11 @@ export default function FunctionalityTest(){
 
     else return <>
 	<SignButton hasSession={true}/>
-	<AddListButton/>
-	<RemListInput/>
-	<AddItem/>
-	<ListList/>
+	<br/>
 	<ShareIdDisplay user_id={session.user.id}/>
+	<br/>
+	<AddListButton/>
+	<br/>
+	<ListList/>
     </>
 }

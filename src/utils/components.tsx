@@ -1,4 +1,4 @@
-import {api} from "~/utils/api";
+import {api, vanilla_api} from "~/utils/api";
 import {onInputHelper} from "~/utils/component_helpers";
 import {useState} from "react";
 import {signIn, signOut} from "next-auth/react";
@@ -18,16 +18,16 @@ export function RemListInput(){
     const [input, setInput] = useState("");
     const mut_hook = api.itemList.deleteList.useMutation();
     return <>
-	<button className="rounded-full px-10 py-3 bg-black/90 text-white" onClick={rem_list.bind(null,mut_hook,input)}>delete list</button>
+	<button className="rounded-full px-10 py-3 bg-black/90 text-white" onClick={()=>{
+	    mut_hook.mutate(input);
+	    setInput("");
+	}}>delete list</button>
 	<input placeholder="remove list id" value={input} onInput = {onInputHelper(setInput)}></input>
     </>
 }
 function add_list(hook:{mutate:()=>void}){
     const a = hook.mutate();
     console.log(a)
-}
-function rem_list(hook:{mutate:(id:string)=>void}, id:string){
-    hook.mutate(id);
 }
 
 export function AddItem(){
@@ -72,20 +72,34 @@ function RemItemBut({id}:{id:string}){
     return <button onClick={()=>rem_item.mutate({item_id:id})}>Delete item</button>;
 }
 export function ListList(){
-    //TODO:do polling here so data updates https://www.apollographql.com/docs/react/data/queries/#polling
     const lists = api.itemList.getLists.useQuery(undefined,{
 	refetchInterval:100
     });
-    if(!lists.data) <p>loading</p>
+    if(!lists.data) <p>loading</p>;
+    const list_items = lists.data?.map((attrs)=>{
+	return <>{ListItem(attrs)}<br/></>
+    });
     // idk why key is needed but typescript got angy otherwise
-    return <>{lists.data?.map(({id})=><a href={"/list/"+id} key={id}>{id}</a>)}</>
+    return <>{list_items}</>
+}
+function ListItem({id}:{id:string}){
+    // using the vanilla api here might be bad practice but I don't know how to get around this otherwise
+    const mutation = vanilla_api.itemList.deleteList;
+    //await mutation.mutate(id)
+    return <>
+	<a href={"/list/"+id} key={id}>{id}</a>
+	<button onClick={()=>{const _ = mutation.mutate(id)}}>delete list</button>
+    </>;
 }
 export function AddItemButton(attrs:{list_id:string}){
     const mutation = api.itemList.addItem.useMutation();
     const [contents,setContents] = useState("");
     return <>
-	<input placeholder="item contents" onInput={onInputHelper(setContents)}/>
-	<button onClick={add_item.bind(null,mutation,contents,attrs.list_id)}>add item</button>
+	<input placeholder="item contents" onInput={onInputHelper(setContents)} value={contents}/>
+	<button onClick={()=>{
+	    setContents("");
+	    mutation.mutate({list_id:attrs.list_id,item_content:contents});
+	}}>add item</button>
     </>;
 }
 export function ShareListButton(attrs:{list_id:string}){
