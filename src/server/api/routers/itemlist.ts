@@ -8,20 +8,23 @@ import {TRPCError} from "@trpc/server";
 import type {PrismaClient} from "@prisma/client";
 import {FallibleCache, ObjectCache} from "~/utils/cache";
 
-const user_list_cache:FallibleCache<{id:string}[] | null> = new FallibleCache();
+const user_list_cache:FallibleCache<{id:string, name:string}[] | null> = new FallibleCache();
 const list_item_cache:FallibleCache<{content:string,id:string}[] | null> = new FallibleCache();
 export const itemListRouter = createTRPCRouter({
-    createList: protectedProcedure.mutation(async ({ctx})=>{
-	const res = await ctx.prisma.itemList.create({
-	    data:{
-		authorized: {
-		    connect: [{id:ctx.session.user.id}]
+    createList: protectedProcedure
+	.input(z.object({name:z.string()}))
+	.mutation(async ({ctx, input:{name}})=>{
+	    const res = await ctx.prisma.itemList.create({
+		data:{
+		    name,
+		    authorized: {
+			connect: [{id:ctx.session.user.id}]
+		    }
 		}
-	    }
-	});
-	// kinda sucks that all the users's lists need to be invalidated at once but oh well
-	user_list_cache.invalidate(ctx.session.user.id);
-	return res;
+	    });
+	    // kinda sucks that all the users's lists need to be invalidated at once but oh well
+	    user_list_cache.invalidate(ctx.session.user.id);
+	    return res;
     }),
     deleteList: protectedProcedure
 	.input(z.string().cuid())
@@ -56,6 +59,31 @@ export const itemListRouter = createTRPCRouter({
 		message: "not authorized to delete this list"
 	    });
     }),
+    getListName: protectedProcedure
+	.input(z.object({
+	    list_id: z.string().cuid()
+	}))
+	.query(async ({ctx:{prisma, session}, input:{list_id}})=>{
+	    if(!await isUserAuthorized(prisma,list_id,session.user.id)){
+		throw new TRPCError({
+		    code:"UNAUTHORIZED",
+		    message: "not authorized to view this list"
+		});
+	    }
+	    //theoretically I could use a cache here but with the caches that exist that would be annoying
+	    const list = await prisma.itemList.findUnique({
+		where:{
+		    id:list_id
+		}
+	    });
+	    if(list === null){
+		throw new TRPCError({
+		    code:"NOT_FOUND",
+		    message: "couldn't find list"
+		});
+	    }
+	    return list.name;
+	}),
     addItem: protectedProcedure
 	.input(z.object({
 	    list_id: z.string().cuid(),
@@ -70,7 +98,7 @@ export const itemListRouter = createTRPCRouter({
 		},
 		data:{
 		    items:{
-			create:[{content:item_content}]
+			create:[{content:item_content, current_count:0, target_count:0}]
 		    }
 		}
 	    });

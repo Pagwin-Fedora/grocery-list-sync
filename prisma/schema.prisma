@@ -3,7 +3,6 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["jsonProtocol"]
 }
 
 datasource db {
@@ -16,16 +15,19 @@ datasource db {
 }
 
 model ItemList {
-  id         String    @id @default(cuid())
-  items      Item[]
-  authorized User[]
+  id 		String    @id @default(cuid())
+  name		String
+  items      	Item[]
+  authorized 	User[]
 }
 
 model Item {
-  id     String   @id @default(cuid())
-  content String
-  list   ItemList @relation(fields: [listId], references: [id])
-  listId String
+  id    	String   @id @default(cuid())
+  content 	String
+  current_count	Int
+  target_count	Int
+  list   	ItemList @relation(fields: [listId], references: [id])
+  listId 	String
 }
 
 

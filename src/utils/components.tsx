@@ -2,6 +2,7 @@ import {api, vanilla_api} from "~/utils/api";
 import {onInputHelper} from "~/utils/component_helpers";
 import {useState} from "react";
 import {signIn, signOut} from "next-auth/react";
+import Head from "next/head";
 export function SignButton({hasSession}:{hasSession:boolean}){
     return <button
 	    className="rounded-full px-10 py-3 text-black font-semibold no-underline bg-black/20"
@@ -11,8 +12,14 @@ export function SignButton({hasSession}:{hasSession:boolean}){
 	  </button>;
 }
 export function AddListButton(){
-    const mut_hook = api.itemList.createList.useMutation();
-    return <button className="rounded-full px-10 py-3 bg-black/90 text-white" onClick={add_list.bind(null,mut_hook)}>add list</button>
+    const mutation = api.itemList.createList.useMutation();
+    const [listName, setListName] = useState("");
+    return <>
+	<input className="ease-in-out duration-200 focus:border-blue-500 outline-none p-2 rounded-full border-blue-300 border-4" placeholder="list name" value={listName} onInput={onInputHelper(setListName)}/>
+	<button className="m-4 rounded-full px-10 py-3 bg-black/90 text-white" onClick={()=>{
+	    mutation.mutate({name:listName});
+	    setListName("");
+	}}>add list</button></>
 }
 export function RemListInput(){
     const [input, setInput] = useState("");
@@ -46,6 +53,7 @@ function add_item(hook:{mutate:(input:{list_id:string, item_content:string})=>vo
 }
 export function ItemList({list_id}:{list_id:string}){
     const data = api.itemList.getItems.useQuery({list_id},{refetchInterval:500});
+    const name = api.itemList.getListName.useQuery({list_id});
     //check if we're fetching
     if(!data.data)return <p>loading list</p>
     const items = data.data.map((data)=>{
@@ -54,7 +62,7 @@ export function ItemList({list_id}:{list_id:string}){
 	    <br/>
 	</>;
     });
-    return <>{items}</>
+    return <><h1 className="font-bold text-3xl">{name.data}</h1> {items}</>
 }
 function Item(item:{id:string, content:string}){
 
@@ -65,11 +73,11 @@ function Item(item:{id:string, content:string}){
     </>;
 }
 function ItemDisp({children}:{children:string}){
-    return <p>{children}</p>
+    return <>{children}</>
 }
 function RemItemBut({id}:{id:string}){
     const rem_item = api.itemList.delItem.useMutation();
-    return <button onClick={()=>rem_item.mutate({item_id:id})}>Delete item</button>;
+    return <button className="m-1 rounded-full bg-red-600 p-1 text-white" onClick={()=>rem_item.mutate({item_id:id})}>Delete item</button>;
 }
 export function ListList(){
     const lists = api.itemList.getLists.useQuery(undefined,{
@@ -79,7 +87,7 @@ export function ListList(){
     // using the vanilla api here might be bad practice but I don't know how to get around this otherwise
     const list_items = lists.data?.map((attrs)=>{
 	return <tr key={attrs.id}>
-	    <td><a className="text-lg" href={"/list/"+attrs.id} key={attrs.id}>{attrs.id}</a></td>
+	    <td><a className="text-lg" href={"/list/"+attrs.id} key={attrs.id}>{attrs.name}</a></td>
 	    <td><button className="hover:ease-in-out hover:duration-500 hover:bg-red-800 active:ease-in-out active:duration-100 active:bg-red-900 outline-none text-white bg-red-600 font-bold text-lg border-4 border-black rounded-full bg-contain m-3 p-1" onClick={()=>{const _ = vanilla_api.itemList.deleteList.mutate(attrs.id)}}>delete list</button></td>
 	</tr>
     });
@@ -109,4 +117,10 @@ export function ShareListButton(attrs:{list_id:string}){
 export function ShareIdDisplay(attrs:{user_id:string}){
     
     return <>share id:{attrs.user_id}</>
+}
+
+export function StandardElements(){
+    return <Head>
+	
+    </Head>
 }
