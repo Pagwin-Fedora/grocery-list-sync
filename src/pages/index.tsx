@@ -1,5 +1,5 @@
 import {useSession} from "next-auth/react";
-import {SignButton, AddListButton, RemListInput, AddItem, ListList, ShareIdDisplay} from "~/utils/components";
+import {SignButton, AddListButton, ListList, ShareIdDisplay, StandardElements} from "~/utils/components";
 export default function FunctionalityTest(){
     const {data:session, status} = useSession();
 
@@ -9,13 +9,11 @@ export default function FunctionalityTest(){
 	return <SignButton hasSession={false}/>;
     }
 
-    else return <>
+    else return <div className="object-center w-max flex justify-center">
+	<StandardElements/>
 	<SignButton hasSession={true}/>
-	<br/>
 	<ShareIdDisplay user_id={session.user.id}/>
-	<br/>
 	<ListList/>
-	<br/>
 	<AddListButton/>
-    </>
+    </div>
 }

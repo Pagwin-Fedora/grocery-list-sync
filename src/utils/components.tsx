@@ -5,7 +5,7 @@ import {signIn, signOut} from "next-auth/react";
 import Head from "next/head";
 export function SignButton({hasSession}:{hasSession:boolean}){
     return <button
-	    className="rounded-full px-10 py-3 text-black font-semibold no-underline bg-black/20"
+	    className="rounded-full px-10 py-3 text-black font-semibold no-underline bg-gray-400 ease-in-out hover:text-white hover:bg-gray-700 hover:duration-300"
 	    onClick={hasSession ? () => void signOut() : () => void signIn()}
 	  >
 	    {hasSession ? "Sign out" : "Sign in"}
@@ -86,9 +86,9 @@ export function ListList(){
     if(!lists.data) <p>loading</p>;
     // using the vanilla api here might be bad practice but I don't know how to get around this otherwise
     const list_items = lists.data?.map((attrs)=>{
-	return <tr key={attrs.id}>
-	    <td><a className="text-lg" href={"/list/"+attrs.id} key={attrs.id}>{attrs.name}</a></td>
-	    <td><button className="hover:ease-in-out hover:duration-500 hover:bg-red-800 active:ease-in-out active:duration-100 active:bg-red-900 outline-none text-white bg-red-600 font-bold text-lg border-4 border-black rounded-full bg-contain m-3 p-1" onClick={()=>{const _ = vanilla_api.itemList.deleteList.mutate(attrs.id)}}>delete list</button></td>
+	return <tr className="m-0" key={attrs.id}>
+	    <td><a className="text-lg underline text-blue-800" href={"/list/"+attrs.id} key={attrs.id}>{attrs.name}</a></td>
+	    <td><button className="hover:ease-in-out hover:duration-500 hover:bg-red-800 active:ease-in-out active:duration-100 active:bg-red-900 outline-none text-white bg-red-600 font-bold text-lg border-3 border-black rounded-full bg-contain m-3 p-1" onClick={()=>{const _ = vanilla_api.itemList.deleteList.mutate(attrs.id)}}>delete list</button></td>
 	</tr>
     });
     // idk why key is needed but typescript got angy otherwise
@@ -116,11 +116,15 @@ export function ShareListButton(attrs:{list_id:string}){
 }
 export function ShareIdDisplay(attrs:{user_id:string}){
     
-    return <>share id:{attrs.user_id}</>
+    return <div className="text-white m-0 p-0">share id:{attrs.user_id}</div>
 }
 
 export function StandardElements(){
-    return <Head>
-	
+    return <>
+    <Head>
+	<script>
+	    document.body.className = "bg-gray-900";
+	</script>
     </Head>
+    </>
 }
