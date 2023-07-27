@@ -9,7 +9,7 @@ export default function FunctionalityTest(){
 	return <SignButton hasSession={false}/>;
     }
 
-    else return <div className="object-center w-max flex justify-center">
+    else return <div className="object-center w-max flex flex-col justify-center">
 	<StandardElements/>
 	<SignButton hasSession={true}/>
 	<ShareIdDisplay user_id={session.user.id}/>

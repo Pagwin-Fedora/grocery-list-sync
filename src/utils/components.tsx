@@ -62,7 +62,7 @@ export function ItemList({list_id}:{list_id:string}){
 	    <br/>
 	</>;
     });
-    return <><h1 className="font-bold text-3xl">{name.data}</h1> {items}</>
+    return <><h1 className="text-white font-bold text-3xl">{name.data}</h1> {items}</>
 }
 function Item(item:{id:string, content:string}){
 
@@ -73,7 +73,7 @@ function Item(item:{id:string, content:string}){
     </>;
 }
 function ItemDisp({children}:{children:string}){
-    return <>{children}</>
+    return <div className="text-white">{children}</div>
 }
 function RemItemBut({id}:{id:string}){
     const rem_item = api.itemList.delItem.useMutation();
@@ -99,7 +99,7 @@ export function AddItemButton(attrs:{list_id:string}){
     const [contents,setContents] = useState("");
     return <>
 	<input placeholder="item contents" onInput={onInputHelper(setContents)} value={contents}/>
-	<button onClick={()=>{
+	<button className="text-white border-1 border-white" onClick={()=>{
 	    setContents("");
 	    mutation.mutate({list_id:attrs.list_id,item_content:contents});
 	}}>add item</button>
@@ -116,7 +116,7 @@ export function ShareListButton(attrs:{list_id:string}){
 }
 export function ShareIdDisplay(attrs:{user_id:string}){
     
-    return <div className="text-white m-0 p-0">share id:{attrs.user_id}</div>
+    return <div className="text-white m-0 p-0">share id: <button className="underline" onClick={()=>navigator.clipboard.writeText(attrs.user_id)}>{attrs.user_id}</button></div>
 }
 
 export function StandardElements(){
