@@ -116,7 +116,10 @@ export function ShareListButton(attrs:{list_id:string}){
 }
 export function ShareIdDisplay(attrs:{user_id:string}){
     
-    return <div className="text-white m-0 p-0">share id: <button className="underline" onClick={()=>navigator.clipboard.writeText(attrs.user_id)}>{attrs.user_id}</button></div>
+    return <div className="text-white m-0 p-0">share id: <button className="underline" onClick={()=>{
+	    navigator.clipboard.writeText(attrs.user_id)
+	    alert("Copied Share id to clipboard");
+	}}>{attrs.user_id}</button></div>
 }
 
 export function StandardElements(){
