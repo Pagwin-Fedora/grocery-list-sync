@@ -57,27 +57,31 @@ export function ItemList({list_id}:{list_id:string}){
     //check if we're fetching
     if(!data.data)return <p>loading list</p>
     const items = data.data.map((data)=>{
-	return <>
-	    <Item key={data.id} id={data.id} content={data.content}/>
-	    <br/>
-	</>;
+	return <Item key={data.id} id={data.id} content={data.content}/>;
     });
     return <><h1 className="text-white font-bold text-3xl">{name.data}</h1> {items}</>
 }
 function Item(item:{id:string, content:string}){
-
-    
+    const [isVisible, setVisibility] = useState(true);
+    if(!isVisible) return <></>;
     return <>
 	<ItemDisp>{item.content}</ItemDisp>
-	<RemItemBut id={item.id}/>
+	<ItemHamburger vis_hook={setVisibility} id={item.id}></ItemHamburger>
+	<br/>
     </>;
+}
+function ItemHamburger({id, vis_hook}:{id:string, vis_hook:(_:boolean)=>void}){
+    return <RemItemBut vis_hook={vis_hook} id={id}/>;
 }
 function ItemDisp({children}:{children:string}){
     return <div className="text-white">{children}</div>
 }
-function RemItemBut({id}:{id:string}){
+function RemItemBut({id, vis_hook}:{id:string, vis_hook:(_:boolean)=>void}){
     const rem_item = api.itemList.delItem.useMutation();
-    return <button className="m-1 rounded-full bg-red-600 p-1 text-white" onClick={()=>rem_item.mutate({item_id:id})}>Delete item</button>;
+    return <button className="m-1 rounded-full bg-red-600 p-1 text-white" onClick={()=>{
+	vis_hook(false);
+	rem_item.mutate({item_id:id});
+    }}>Delete item</button>;
 }
 export function ListList(){
     const lists = api.itemList.getLists.useQuery(undefined,{

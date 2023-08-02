@@ -90,8 +90,7 @@ export const itemListRouter = createTRPCRouter({
 	    item_content: z.string()
 	}))
 	.mutation(async ({ctx:{prisma,session}, input:{list_id,item_content}})=>{
-	    if(!await isUserAuthorized(prisma,list_id,session.user.id)) return false;
-	    list_item_cache.invalidate(list_id);
+	    if(!await isUserAuthorized(prisma,list_id,session.user.id)) ;
 	    await prisma.itemList.update({
 		where:{
 		    id:list_id
@@ -130,8 +129,13 @@ export const itemListRouter = createTRPCRouter({
 		    id:item_id
 		}
 	    }))?.listId || "if you see this string anywhere go to ~/src/server/api/routers/itemlist.ts";
-	    if(!await isUserAuthorized(prisma,list_id,session.user.id)) return false;
 	    list_item_cache.invalidate(list_id);
+	    if(!await isUserAuthorized(prisma,list_id,session.user.id)){
+		throw new TRPCError({
+		    code:"UNAUTHORIZED",
+		    message: "not authorized to delete this list"
+		});
+	    }
 	    await prisma.item.delete({
 		where:{
 		    id:item_id
